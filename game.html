@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play Game! - Kids Game Zone</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css"> <!-- Link to main.css (to be created) -->
+    <style>
+        /* Basic styles for the game page */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            background-color: #e6f7ff; /* Light blue background, slightly different from dashboard */
+            color: #073B4C; /* Dark Blue text */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .game-header {
+            background-color: #06D6A0; /* Teal */
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .game-header .back-button {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1em;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: opacity 0.3s ease;
+        }
+        .game-header .back-button:hover {
+            opacity: 0.8;
+        }
+        .game-header .back-button .material-icons {
+            font-size: 1.5em;
+        }
+        .game-header #game-page-title {
+            font-size: 1.8em;
+            margin: 0;
+            font-weight: bold;
+        }
+        .game-main-content {
+            flex-grow: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 900px; /* Max width for game area */
+            margin: 0 auto; /* Center content */
+            box-sizing: border-box;
+        }
+        #game-container {
+            width: 100%;
+            min-height: 450px; /* Adjust as needed */
+            background-color: #ffffff;
+            border: 3px dashed #FFD166; /* Mustard Yellow */
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+        #game-container p {
+            font-size: 1.2em;
+            color: #555;
+        }
+        .score-and-controls {
+            background-color: #073B4C; /* Dark Blue */
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            width: 100%;
+            max-width: 400px; /* Controls bar width */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .score-and-controls h2 {
+            margin: 0;
+            font-size: 1.5em;
+            color: #FFD166; /* Mustard Yellow for score text */
+        }
+        .score-and-controls #current-score {
+            font-weight: bold;
+            color: white;
+        }
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .game-header #game-page-title {
+                font-size: 1.4em;
+            }
+            .game-header .back-button {
+                font-size: 1em;
+            }
+            #game-container {
+                min-height: 350px;
+            }
+            .score-and-controls h2 {
+                font-size: 1.3em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="game-header">
+        <a href="index.html" class="back-button">
+            <span class="material-icons">arrow_back_ios</span> Back to Games
+        </a>
+        <h1 id="game-page-title">Game Title</h1> <!-- Title will be set by JS -->
+    </header>
+
+    <main class="game-main-content">
+        <div id="game-container">
+            <!-- Game content will be dynamically loaded here by js/game_player.js -->
+            <p>Loading game, please wait...</p>
+        </div>
+
+        <div class="score-and-controls">
+            <h2>Score: <span id="current-score">0</span></h2>
+            <!-- Additional game controls can be added here later -->
+        </div>
+    </main>
+
+    <script src="js/game_player.js"></script> <!-- Script for game playing logic (to be created) -->
+</body>
+</html>

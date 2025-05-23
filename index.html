@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kids Game Dashboard - Fun & Engaging Games!</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css"> <!-- Link to main.css (to be created) -->
+    <style>
+        /* Basic styles to make the page visually appealing until main.css is implemented */
+        body {
+            font-family: 'Arial', sans-serif; /* Kid-friendly font like 'Comic Sans MS' or a playful Google Font could be used later */
+            margin: 0;
+            background-color: #f0f8ff; /* Light AliceBlue background */
+            color: #073B4C; /* Dark Blue text */
+            line-height: 1.6;
+        }
+        .header {
+            background-color: #118AB2; /* Cerulean */
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 5px solid #FFD166; /* Mustard Yellow accent */
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+        .header p {
+            font-size: 1.1em;
+            margin-top: 5px;
+        }
+        .game-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 30px 15px;
+            gap: 25px;
+        }
+        .game-card {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            overflow: hidden;
+            width: 320px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #ddd;
+        }
+        .game-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .game-card img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-bottom: 3px solid #FFD166; /* Mustard Yellow */
+        }
+        .game-card h3 {
+            font-size: 1.6em;
+            color: #073B4C; /* Dark Blue */
+            margin: 20px 10px 10px;
+        }
+        .game-card p {
+            font-size: 0.95em;
+            padding: 0 20px;
+            margin-bottom: 20px;
+            color: #333;
+            min-height: 60px; /* Ensure consistent card height */
+        }
+        .play-button {
+            background-color: #FF6F61; /* Coral */
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .play-button:hover {
+            background-color: #e05a50; /* Darker Coral */
+            transform: scale(1.05);
+        }
+        .play-button .material-icons {
+            font-size: 1.3em; /* Slightly larger icon */
+        }
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .game-card {
+                width: calc(50% - 20px); /* Two cards per row */
+            }
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+        @media (max-width: 480px) {
+            .game-card {
+                width: calc(100% - 20px); /* One card per row */
+            }
+             .header h1 {
+                font-size: 1.8em;
+            }
+            .header p {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <h1>Welcome to the Kids Game Zone!</h1>
+        <p>Choose a game below and start the fun!</p>
+    </header>
+
+    <main class="game-grid" id="gameListContainer">
+        <!-- Game cards will be dynamically loaded by js/main.js or can be hardcoded for MVP -->
+        <div class="game-card">
+            <img src="https://images.unsplash.com/photo-1578040950774-Pc9319670797?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8a2lkcyUyMHRveXMlMjBjb2xvcmZ1bHxlbnwwfHwwfHx8MA&auto=format&fit=crop&w=500&q=60" alt="Color Match Fun Game">
+            <h3>Color Match Fun</h3>
+            <p>Match colorful items, learn new colors, and sharpen your observation skills in this vibrant game!</p>
+            <a href="game.html?game=game_one" class="play-button">
+                Play Now <span class="material-icons">play_circle_filled</span>
+            </a>
+        </div>
+
+        <div class="game-card">
+            <img src="https://images.unsplash.com/photo-1600967999800-400007157063?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGdlb21ldHJpYyUyMHNoYXBlcyUyMGtpZHN8ZW58MHx8MHx8fDA&auto=format&fit=crop&w=500&q=60" alt="Shape Puzzle Adventure Game">
+            <h3>Shape Puzzle Adventure</h3>
+            <p>Embark on an exciting adventure by solving fun puzzles with different geometric shapes. Great for learning!</p>
+            <a href="game.html?game=game_two_solving" class="play-button">
+                Play Now <span class="material-icons">extension</span>
+            </a>
+        </div>
+
+        <div class="game-card">
+            <img src="https://images.unsplash.com/photo-1509385439111-668f7e38a095?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8bnVtYmVycyUyMGtpZHMlMjBnYW1lfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60" alt="Number Maze Challenge Game">
+            <h3>Number Maze Challenge</h3>
+            <p>Navigate through exciting mazes while practicing your numbers. A fun way to boost counting skills!</p>
+            <a href="game.html?game=game_three" class="play-button">
+                Play Now <span class="material-icons">explore</span>
+            </a>
+        </div>
+        
+        <!-- More games can be added here -->
+    </main>
+
+    <script src="js/main.js"></script> <!-- Script for dashboard logic (to be created) -->
+</body>
+</html>

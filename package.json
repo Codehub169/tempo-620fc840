@@ -1,0 +1,18 @@
+{
+  "name": "kids-game-dashboard",
+  "version": "1.0.0",
+  "description": "Engaging and fun games for kids. A web-based platform to host and play games designed for children.",
+  "main": "index.html",
+  "scripts": {
+    "start": "sh startup.sh"
+  },
+  "keywords": [
+    "kids",
+    "games",
+    "fun",
+    "educational",
+    "dashboard"
+  ],
+  "author": "AI Generated",
+  "license": "MIT"
+}
