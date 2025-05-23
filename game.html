@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Play Game! - Kids Game Zone</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="css/main.css"> <!-- Link to main.css (to be created) -->
+    <link rel="stylesheet" href="css/main.css"> <!-- Link to main.css -->
     <style>
         /* Basic styles for the game page */
         body {
@@ -132,6 +132,8 @@
         </div>
     </main>
 
-    <script src="js/game_player.js"></script> <!-- Script for game playing logic (to be created) -->
+    <script src="js/lib/sql-wasm.js"></script> <!-- SQL.js WASM library loader -->
+    <script src="js/score_manager.js"></script> <!-- Manages game scores -->
+    <script src="js/game_player.js"></script> <!-- Game specific logic for this page -->
 </body>
 </html>
