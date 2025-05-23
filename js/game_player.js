@@ -2,14 +2,29 @@
 // This script relies on score_manager.js and its dependency (sql-wasm.js) being loaded first.
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const gameTitleElement = document.getElementById('game-title');
+    // Helper function to safely display error messages in gameContainer involving dynamic unsafe content
+    function displayErrorInGameContainer(prefix, dynamicContent, suffix) {
+        if (!gameContainer) return;
+        gameContainer.innerHTML = ''; // Clear previous content
+        const p = document.createElement('p');
+        p.appendChild(document.createTextNode(prefix));
+        if (dynamicContent) {
+            const strong = document.createElement('strong'); // Make dynamic part stand out
+            strong.textContent = dynamicContent; // Safely sets text
+            p.appendChild(strong);
+        }
+        p.appendChild(document.createTextNode(suffix));
+        gameContainer.appendChild(p);
+    }
+
+    const gameTitleElement = document.getElementById('game-page-title'); // Changed from 'game-title'
     const gameContainer = document.getElementById('game-container');
-    const scoreValueElement = document.getElementById('score-value');
-    const backButton = document.querySelector('header .back-button'); // More specific selector
+    const scoreValueElement = document.getElementById('current-score'); // Changed from 'score-value'
+    const backButton = document.querySelector('header .back-button'); // More specific selector for game.html's header
 
     if (!gameTitleElement || !gameContainer || !scoreValueElement) {
         console.error('Essential UI elements for game player are missing!');
-        if(gameContainer) gameContainer.innerHTML = '<p>Error: Page structure is incomplete. Cannot load game.</p>';
+        if (gameContainer) gameContainer.innerHTML = '<p>Error: Page structure is incomplete. Cannot load game.</p>';
         return;
     }
 
@@ -26,6 +41,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!gameId) {
         gameContainer.innerHTML = '<p>No game selected. Please <a href="index.html">go back to the dashboard</a> and choose a game.</p>';
         gameTitleElement.textContent = 'Error - No Game';
+        return;
+    }
+
+    const GAME_ID_PATTERN = /^[a-zA-Z0-9_]+$/; // Allow alphanumeric and underscores for security
+    if (!GAME_ID_PATTERN.test(gameId)) {
+        gameContainer.innerHTML = '<p>Invalid game identifier format. Please check the game ID or <a href="index.html">go back to the dashboard</a>.</p>';
+        gameTitleElement.textContent = 'Error - Invalid Game ID';
         return;
     }
 
@@ -66,6 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             } catch (error) {
                 console.error("Error during score update process:", error);
+                // Optionally, display a subtle error to the user if score persistence fails
             }
         };
 
@@ -86,18 +109,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                 window[gameFunctionName](gameContainer, updateScoreDisplayAndPersist, initialScore);
             } else {
                 console.error(`Game start function '${gameFunctionName}' not found in ${gameScriptPath}.`);
-                gameContainer.innerHTML = `<p>Error: Could not initialize game logic for '${formattedGameTitle}'. The game file might be missing or does not define the required start function.</p>`;
+                displayErrorInGameContainer(
+                    "Error: Could not initialize game logic for '",
+                    formattedGameTitle,
+                    "'. The game file might be missing or does not define the required start function."
+                );
             }
         };
         script.onerror = () => {
             console.error(`Failed to load game script: ${gameScriptPath}`);
-            gameContainer.innerHTML = `<p>Error: Failed to load the game script for '${formattedGameTitle}'. Please check if the file exists and there are no network errors.</p>`;
+            displayErrorInGameContainer(
+                "Error: Failed to load the game script for '",
+                formattedGameTitle,
+                "'. Please check if the file exists and there are no network errors."
+            );
         };
         document.body.appendChild(script); // Append to body to ensure execution
 
     } catch (error) {
         console.error("Fatal error setting up game environment:", error);
-        gameContainer.innerHTML = `<p>Could not initialize the game environment: ${error.message}. Please try refreshing the page or contact support.</p>`;
+        displayErrorInGameContainer(
+            "Could not initialize the game environment: ",
+            error.message, // error.message is generally safe but this helper ensures it's treated as text
+            ". Please try refreshing the page or contact support."
+        );
         gameTitleElement.textContent = 'Initialization Error';
     }
 });

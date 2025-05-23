@@ -132,14 +132,14 @@ main {
 }
 
 /* Game Play Page (game.html) */
-.game-page-header {
+.game-header {
     display: flex;
     align-items: center;
     justify-content: center; /* Center title by default */
     padding: 15px 30px; /* Slightly less padding than main header */
 }
 
-.game-page-header h1#game-title {
+.game-header h1#game-page-title { /* Changed from #game-title */
     font-size: 2.2em;
     flex-grow: 1; /* Allow title to take space */
     text-align: center;
@@ -211,7 +211,7 @@ main {
     margin: 0;
 }
 
-#score-value {
+#current-score { /* Changed from #score-value */
     font-weight: 900;
     color: var(--color-coral);
     margin-left: 10px;
@@ -241,7 +241,7 @@ footer p {
     header h1 {
         font-size: 2.2em;
     }
-    .game-page-header h1#game-title {
+    .game-header h1#game-page-title { /* Changed from #game-title */
         font-size: 1.8em;
     }
     .back-button {
@@ -250,7 +250,7 @@ footer p {
         margin-bottom: 15px;
         align-self: flex-start;
     }
-    .game-page-header {
+    .game-header {
         flex-direction: column;
         align-items: center;
     }
@@ -270,7 +270,7 @@ footer p {
     header h1 {
         font-size: 1.8em;
     }
-    .game-page-header h1#game-title {
+    .game-header h1#game-page-title { /* Changed from #game-title */
         font-size: 1.5em;
     }
     .play-button {
