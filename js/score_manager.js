@@ -5,10 +5,34 @@ const scoreManager = (() => {
     let db; // Will hold the SQLite database instance
     let initPromise = null; // Promise for a single initialization
 
-    const dbPath = 'data/kids_games.db'; // Path to the SQLite DB file (read-only for fetch)
+    const dbPath = 'data/kids_games.db'; // Path to the SQLite DB file (seed)
+    const localStorageKey = 'kidsGamesDbPersistent';
     // The wasm file path is relative to the HTML, but initSqlJs's locateFile needs path relative to where sql-wasm.js is if not same dir
     // Assuming sql-wasm.js and sql-wasm.wasm are both in js/lib/
-    const wasmConfig = { locateFile: file => `js/lib/${file}` }; 
+    const wasmConfig = { locateFile: file => `js/lib/${file}` };
+
+    async function _saveDbToLocalStorage() {
+        if (!db) {
+            console.warn("Attempted to save DB, but DB instance is not available.");
+            return;
+        }
+        try {
+            const dbData = db.export(); // Uint8Array
+            // Efficiently convert Uint8Array to Base64 string
+            // 1. Convert Uint8Array to a binary string
+            let binary = '';
+            const len = dbData.byteLength;
+            for (let i = 0; i < len; i++) {
+                binary += String.fromCharCode(dbData[i]);
+            }
+            // 2. Convert binary string to Base64
+            const base64String = btoa(binary);
+            localStorage.setItem(localStorageKey, base64String);
+            console.log("Database state saved to localStorage.");
+        } catch (e) {
+            console.error("Failed to save database to localStorage:", e);
+        }
+    }
 
     async function _initialize() {
         try {
@@ -19,29 +43,50 @@ const scoreManager = (() => {
             }
             
             const SQL = await window.initSqlJs(wasmConfig);
+            let dbLoadedFromStorage = false;
 
-            let dbFileBuffer = null;
             try {
-                const response = await fetch(dbPath);
-                if (response.ok) {
-                    dbFileBuffer = await response.arrayBuffer();
-                    if (dbFileBuffer && dbFileBuffer.byteLength > 0) {
-                        console.log(`Database file loaded successfully from ${dbPath} (${dbFileBuffer.byteLength} bytes).`);
-                        db = new SQL.Database(new Uint8Array(dbFileBuffer));
-                    } else {
-                        console.warn(`Fetched database file at ${dbPath} is empty or invalid. Creating new in-memory DB.`);
-                        db = new SQL.Database(); // Create a new empty database
+                const savedDbBase64 = localStorage.getItem(localStorageKey);
+                if (savedDbBase64) {
+                    const binaryString = atob(savedDbBase64);
+                    const len = binaryString.length;
+                    const bytes = new Uint8Array(len);
+                    for (let i = 0; i < len; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
                     }
-                } else {
-                    console.warn(`Failed to fetch database file at ${dbPath} (status: ${response.status}). This is normal if the DB doesn't exist yet. Creating new in-memory DB.`);
-                    db = new SQL.Database(); // Create a new empty database
+                    db = new SQL.Database(bytes);
+                    console.log("Database loaded from localStorage.");
+                    dbLoadedFromStorage = true;
                 }
-            } catch (error) {
-                console.warn(`Error fetching ${dbPath}: ${error}. This might be a network issue or CSP. Creating new in-memory DB.`);
-                db = new SQL.Database(); // Create a new empty database
+            } catch (e) {
+                console.warn("Failed to load database from localStorage, or localStorage is not available (this may be normal on first run or if data is corrupted):", e);
+                localStorage.removeItem(localStorageKey); // Clear potentially corrupted data
+            }
+
+            if (!dbLoadedFromStorage) {
+                let dbFileBuffer = null;
+                try {
+                    const response = await fetch(dbPath);
+                    if (response.ok) {
+                        dbFileBuffer = await response.arrayBuffer();
+                        if (dbFileBuffer && dbFileBuffer.byteLength > 0) {
+                            console.log(`Database file loaded successfully from ${dbPath} (${dbFileBuffer.byteLength} bytes). Initializing with this.`);
+                            db = new SQL.Database(new Uint8Array(dbFileBuffer));
+                        } else {
+                            console.warn(`Fetched database file at ${dbPath} is empty or invalid. Creating new database.`);
+                            db = new SQL.Database();
+                        }
+                    } else {
+                        console.warn(`Failed to fetch database file at ${dbPath} (status: ${response.status}). This is normal if the DB doesn't exist yet. Creating new database.`);
+                        db = new SQL.Database();
+                    }
+                } catch (error) {
+                    console.warn(`Error fetching ${dbPath}: ${error}. This might be a network issue or CSP. Creating new database.`);
+                    db = new SQL.Database();
+                }
             }
             
-            // Create scores table if it doesn't exist. Stores the highest score per game.
+            // Ensure the scores table exists
             db.run(`
                 CREATE TABLE IF NOT EXISTS scores (
                     game_id TEXT PRIMARY KEY,
@@ -49,24 +94,29 @@ const scoreManager = (() => {
                 );
             `);
 
-            // Ensure known games have an entry (e.g. for displaying 0 score initially)
+            // Ensure known games have an entry (e.g. for displaying 0 score initially or if DB was new/from seed)
             const knownGames = ['game_one', 'game_two_solving', 'game_three'];
             knownGames.forEach(gameId => {
                 try {
+                    // This will insert if game_id doesn't exist, or do nothing if it exists.
+                    // If it exists, its score remains unchanged by this specific operation.
                     db.run("INSERT OR IGNORE INTO scores (game_id, score) VALUES (?, ?)", [gameId, 0]);
                 } catch (e) {
                     console.error(`Error ensuring score entry for ${gameId}:`, e);
                 }
             });
 
-            console.log("Score manager initialized successfully. Database is in-memory.");
-            // Note: Changes to this DB are in-memory. For persistence on a static site,
-            // one would need to use localStorage to save/load db.export() or have a backend.
-            return true; // Indicate success
+            console.log("Score manager initialized. Database is ready.");
+            // If the DB was not loaded from localStorage (i.e., it's from fetched seed or a new DB),
+            // save its current state (which includes ensured table and known games) to localStorage.
+            if (!dbLoadedFromStorage) { 
+                await _saveDbToLocalStorage();
+            }
+            return true; 
         } catch (err) {
             console.error("Failed to initialize score manager:", err);
-            db = null; // Ensure db is null if init fails
-            throw err; // Propagate error to allow callers to handle it
+            db = null; 
+            throw err; 
         }
     }
 
@@ -81,44 +131,49 @@ const scoreManager = (() => {
     }
 
     async function getScore(gameId) {
-        await initialize(); // Ensure DB is ready
-        if (!db) throw new Error("Database not available in getScore.");
+        await initialize(); 
+        if (!db) throw new Error("Database not available in getScore. Initialization might have failed.");
         
         try {
             const stmt = db.prepare("SELECT score FROM scores WHERE game_id = :gameId");
             stmt.bind({ ':gameId': gameId });
             let currentScore = 0;
             if (stmt.step()) { // true if row found
-                currentScore = stmt.get()[0];
+                const row = stmt.get(); // Returns an array, e.g., [50]
+                if (row && typeof row[0] === 'number') {
+                    currentScore = row[0];
+                }
             }
             stmt.free();
             return currentScore;
         } catch (err) {
             console.error(`Error getting score for ${gameId}:`, err);
-            return 0; // Return default score on error
+            return 0; // Return default score on error or if not found
         }
     }
 
     async function updateScore(gameId, newScore) {
-        await initialize(); // Ensure DB is ready
-        if (!db) throw new Error("Database not available in updateScore.");
+        await initialize(); 
+        if (!db) throw new Error("Database not available in updateScore. Initialization might have failed.");
 
-        if (typeof newScore !== 'number' || newScore < 0) {
-            console.error("Invalid score provided:", newScore);
+        if (typeof newScore !== 'number' || isNaN(newScore) || newScore < 0) {
+            console.error("Invalid score provided: must be a non-negative number.", newScore);
             return false;
         }
         try {
-            const currentScore = await getScore(gameId); // getScore already ensures init
-            if (newScore > currentScore) {
+            const currentScoreInDb = await getScore(gameId); 
+
+            if (newScore > currentScoreInDb) {
                  db.run("INSERT OR REPLACE INTO scores (game_id, score) VALUES (:gameId, :score)", {
                     ':gameId': gameId,
                     ':score': newScore
                 });
-                console.log(`Score updated for ${gameId} from ${currentScore} to ${newScore}.`);
+                console.log(`Score updated for ${gameId} from ${currentScoreInDb} to ${newScore}.`);
+                await _saveDbToLocalStorage(); // Save after successful update
                 return true;
             }
-            console.log(`New score ${newScore} is not higher than current ${currentScore} for ${gameId}.`);
-            return false; // Score not higher
+            console.log(`New score ${newScore} is not higher than current ${currentScoreInDb} for ${gameId}. No update.`);
+            return false; 
         } catch (err) {
             console.error(`Error updating score for ${gameId}:`, err);
             return false;
@@ -126,8 +181,8 @@ const scoreManager = (() => {
     }
     
     async function getAllScores() {
-        await initialize(); // Ensure DB is ready
-        if (!db) throw new Error("Database not available in getAllScores.");
+        await initialize(); 
+        if (!db) throw new Error("Database not available in getAllScores. Initialization might have failed.");
         
         try {
             const results = [];
@@ -143,6 +198,7 @@ const scoreManager = (() => {
         }
     }
 
+    // Exposed methods
     return {
         initialize,
         getScore,
@@ -151,5 +207,5 @@ const scoreManager = (() => {
     };
 })();
 
-// Make scoreManager globally accessible (optional, but common for this pattern without modules)
+// Make scoreManager globally accessible
 window.scoreManager = scoreManager;
